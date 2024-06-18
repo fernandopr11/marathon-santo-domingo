@@ -1,9 +1,12 @@
 import DefaultLayout from '@/layouts/default';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { useTheme } from 'next-themes';
 
 const DragAndDrop = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { theme } = useTheme();
+  const [isMounted, setIsMounted] = useState(false);
 
   const onDrop = (acceptedFiles: File[]) => {
     setSelectedFile(acceptedFiles[0]);
@@ -14,6 +17,12 @@ const DragAndDrop = () => {
     accept: 'image/*',
   });
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
+
   return (
     <DefaultLayout>
       <div className="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg">
@@ -23,7 +32,7 @@ const DragAndDrop = () => {
 
         <div
           {...getRootProps({
-            className: `border-2 border-${isDragActive ? 'green' : 'gray'}-300 border-dashed rounded-lg p-6 mb-4 flex justify-center items-center cursor-pointer bg-gray-200 dark:bg-gray-700`,
+            className: `border-2 ${isDragActive ? 'border-green-500' : 'border-gray-300 dark:border-gray-500'} border-dashed rounded-lg p-6 mb-4 flex justify-center items-center cursor-pointer bg-gray-200 dark:bg-gray-700`,
           })}
         >
           <input {...getInputProps()} />
