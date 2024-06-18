@@ -27,6 +27,12 @@ const INITIAL_VISIBLE_COLUMNS = columns.map(col => col.uid);
 
 type Pago = (typeof pagos)[0];
 
+// Agregar columna de vista previa del pago
+const extendedColumns = [
+  ...columns,
+  { uid: 'preview', name: 'VISTA PREVIA DEL PAGO' }
+];
+
 export default function App() {
   const [filterValue, setFilterValue] = useState('');
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
@@ -43,9 +49,9 @@ export default function App() {
   const hasSearchFilter = Boolean(filterValue);
 
   const headerColumns = useMemo(() => {
-    if (visibleColumns === 'all') return columns;
+    if (visibleColumns === 'all') return extendedColumns;
 
-    return columns.filter((column) =>
+    return extendedColumns.filter((column) =>
       Array.from(visibleColumns).includes(column.uid)
     );
   }, [visibleColumns]);
@@ -100,6 +106,10 @@ export default function App() {
               ✕
             </Button>
           </div>
+        );
+      case 'preview':
+        return (
+          <a href="#" className="text-blue-500 underline">Ver Pago</a>
         );
       default:
         return cellValue as React.ReactNode;
@@ -171,7 +181,7 @@ export default function App() {
                 selectionMode="multiple"
                 onSelectionChange={setVisibleColumns}
               >
-                {columns.map((column) => (
+                {extendedColumns.map((column) => (
                   <DropdownItem key={column.uid} className="capitalize">
                     {capitalize(column.name)}
                   </DropdownItem>
@@ -268,7 +278,7 @@ export default function App() {
           {(column) => (
             <TableColumn
               key={column.uid}
-              align={column.uid === 'actions' ? 'center' : 'start'}
+              align={column.uid === 'actions' || column.uid === 'preview' ? 'center' : 'start'}
               allowsSorting={column.sortable}
             >
               {column.name}
