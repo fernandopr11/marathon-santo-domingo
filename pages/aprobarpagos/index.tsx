@@ -14,6 +14,11 @@ import {
   Pagination,
   Selection,
   SortDescriptor,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from '@nextui-org/react';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 
@@ -45,6 +50,8 @@ export default function App() {
     direction: 'ascending',
   });
   const [page, setPage] = useState(1);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const hasSearchFilter = Boolean(filterValue);
 
@@ -109,7 +116,16 @@ export default function App() {
         );
       case 'preview':
         return (
-          <a href="#" className="text-blue-500 underline">Ver Pago</a>
+          <a
+            href="#"
+            className="text-blue-500 underline"
+            onClick={() => {
+              setSelectedImage('/images/marathon.jpg'); // Ruta relativa a la imagen en la carpeta public
+              setModalVisible(true);
+            }}
+          >
+            Ver Pago
+          </a>
         );
       default:
         return cellValue as React.ReactNode;
@@ -295,6 +311,22 @@ export default function App() {
           )}
         </TableBody>
       </Table>
+
+      {selectedImage && (
+        <Modal isOpen={modalVisible} onClose={() => setModalVisible(false)}>
+          <ModalContent>
+            <ModalHeader>
+              <h2>Vista previa del pago</h2>
+            </ModalHeader>
+            <ModalBody>
+              <img src={selectedImage} alt="Vista previa del pago" className="rounded-lg shadow-md" />
+            </ModalBody>
+            <ModalFooter>
+              <Button onClick={() => setModalVisible(false)}>Cerrar</Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
     </DefaultLayout>
   );
 }
