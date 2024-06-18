@@ -16,18 +16,18 @@ const DragAndDrop = () => {
 
   return (
     <DefaultLayout>
-      <div className="max-w-md mx-auto p-6 bg-white shadow-lg rounded-lg">
-        <h1 className="text-2xl font-bold text-center mb-4">
+      <div className="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg">
+        <h1 className="text-2xl font-bold text-center mb-4 text-black dark:text-white">
           Carga aquí tu comprobante de pago
         </h1>
 
         <div
           {...getRootProps({
-            className: `border-2 border-${isDragActive ? 'green' : 'gray'}-300 border-dashed rounded-lg p-6 mb-4 flex justify-center items-center cursor-pointer`,
+            className: `border-2 border-${isDragActive ? 'green' : 'gray'}-300 border-dashed rounded-lg p-6 mb-4 flex justify-center items-center cursor-pointer bg-gray-200 dark:bg-gray-700`,
           })}
         >
           <input {...getInputProps()} />
-          <p className="text-lg text-gray-500 text-center">
+          <p className="text-lg text-gray-700 dark:text-gray-300 text-center">
             {isDragActive
               ? 'Suelta aquí'
               : 'Arrastra y suelta una imagen aquí, o haz clic para seleccionar'}
@@ -35,8 +35,8 @@ const DragAndDrop = () => {
         </div>
 
         {selectedFile && (
-          <div className="bg-gray-100 rounded-lg p-4">
-            <p className="text-lg text-gray-700 mb-2">Vista previa:</p>
+          <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+            <p className="text-lg text-gray-700 dark:text-gray-300 mb-2">Vista previa:</p>
             <div className="flex justify-center">
               <div className="max-w-xs">
                 <img
