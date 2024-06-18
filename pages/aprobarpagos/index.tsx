@@ -120,7 +120,7 @@ export default function App() {
             href="#"
             className="text-blue-500 underline"
             onClick={() => {
-              setSelectedImage('/images/marathon.jpg'); // Ruta relativa a la imagen en la carpeta public
+              setSelectedImage('/images/comprobante.jpg'); // Ruta relativa a la imagen en la carpeta public
               setModalVisible(true);
             }}
           >
