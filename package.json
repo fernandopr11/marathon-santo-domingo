@@ -18,6 +18,7 @@
 		"@typescript-eslint/parser": "7.2.0",
 		"autoprefixer": "10.4.19",
 		"clsx": "2.0.0",
+		"dayjs": "^1.11.11",
 		"eslint": "^8.26.0",
 		"eslint-config-prettier": "^8.2.0",
 		"eslint-plugin-import": "^2.26.0",
@@ -27,6 +28,7 @@
 		"eslint-plugin-react": "^7.23.2",
 		"eslint-plugin-react-hooks": "^4.6.0",
 		"eslint-plugin-unused-imports": "^3.2.0",
+		"formik": "^2.4.6",
 		"framer-motion": "~11.1.1",
 		"intl-messageformat": "^10.5.0",
 		"next": "14.2.1",
@@ -36,8 +38,10 @@
 		"react-dom": "18.3.1",
 		"react-dropzone": "^14.2.3",
 		"react-icons": "^5.2.1",
+		"react-toastify": "^10.0.5",
 		"tailwind-variants": "0.1.20",
 		"tailwindcss": "3.4.3",
-		"typescript": "5.0.4"
+		"typescript": "5.0.4",
+		"yup": "^1.4.0"
 	}
 }
