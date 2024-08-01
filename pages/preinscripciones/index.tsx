@@ -23,7 +23,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { VerticalDotsIcon } from '@/components/preinscripciones/VerticalDotsIcon';
 import { ChevronDownIcon } from '@/components/preinscripciones/ChevronDownIcon';
 import { SearchIcon } from '@/components/icons';
-import { columns2, users2 } from '@/components/preinscripciones/data';
+import { columns2, users2 as initialUsers } from '@/components/preinscripciones/data';
 import { capitalize } from '@/components/preinscripciones/utils';
 import DefaultLayout from '@/layouts/default';
 
@@ -33,13 +33,15 @@ const INITIAL_VISIBLE_COLUMNS = [
   'cedula',
   'categoria',
   'talla',
+  'status', // Asegurarse de que 'status' esté aquí
 ];
 
-type User = (typeof users2)[0];
+type User = (typeof initialUsers)[0];
 
 const CATEGORY_OPTIONS = ['42k', '21k', '10k'];
 
 export default function App() {
+  const [users, setUsers] = useState(initialUsers);
   const [filterValue, setFilterValue] = useState('');
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
   const [visibleColumns, setVisibleColumns] = useState<Selection>(
@@ -58,6 +60,18 @@ export default function App() {
   const hasSearchFilter = Boolean(filterValue);
   const hasCategoryFilter = selectedCategories.size > 0;
 
+  const handleAccept = (id) => {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) => (user.id === id ? { ...user, status: 'Aceptado' } : user))
+    );
+  };
+
+  const handleReject = (id) => {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) => (user.id === id ? { ...user, status: 'Rechazado' } : user))
+    );
+  };
+
   const headerColumns = useMemo(() => {
     if (visibleColumns === 'all') return columns2;
 
@@ -67,7 +81,7 @@ export default function App() {
   }, [visibleColumns]);
 
   const filteredItems = useMemo(() => {
-    let filteredUsers = [...users2];
+    let filteredUsers = [...users];
 
     if (hasSearchFilter) {
       filteredUsers = filteredUsers.filter((user) =>
@@ -82,7 +96,7 @@ export default function App() {
     }
 
     return filteredUsers;
-  }, [filterValue, selectedCategories]);
+  }, [filterValue, selectedCategories, users]);
 
   const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
@@ -131,6 +145,23 @@ export default function App() {
             {cellValue}
           </Chip>
         );
+      case 'status':
+        return (
+          <Chip
+            className="capitalize"
+            color={
+              user.status === 'Aceptado'
+                ? 'success'
+                : user.status === 'Rechazado'
+                ? 'danger'
+                : 'warning'
+            }
+            size="sm"
+            variant="flat"
+          >
+            {cellValue}
+          </Chip>
+        );
       case 'apellidos':
       case 'cedula':
       case 'fechaNacimiento':
@@ -142,10 +173,22 @@ export default function App() {
       case 'actions':
         return (
           <div className="relative flex justify-center items-center gap-2">
-            <Button isIconOnly size="sm" color="success" variant="light">
+            <Button
+              isIconOnly
+              size="sm"
+              color="success"
+              variant="light"
+              onPress={() => handleAccept(user.id)}
+            >
               ✓
             </Button>
-            <Button isIconOnly size="sm" color="danger" variant="light">
+            <Button
+              isIconOnly
+              size="sm"
+              color="danger"
+              variant="light"
+              onPress={() => handleReject(user.id)}
+            >
               ✕
             </Button>
           </div>
@@ -260,7 +303,7 @@ export default function App() {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-default-400 text-small">
-            Total {users2.length} participantes
+            Total {users.length} participantes
           </span>
           <label className="flex items-center text-default-400 text-small">
             Registros por página:
@@ -283,7 +326,7 @@ export default function App() {
     onSearchChange,
     onRowsPerPageChange,
     onCategoryChange,
-    users2.length,
+    users.length,
     hasSearchFilter,
   ]);
 
