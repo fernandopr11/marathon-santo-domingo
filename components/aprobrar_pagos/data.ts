@@ -1,5 +1,4 @@
 const columns = [
-
   {
     name: "ID",
     uid: "id",
@@ -9,8 +8,8 @@ const columns = [
     name: "NOMBRES",
     uid: "nombres",
     sortable: true,
-  }
-  , {
+  },
+  {
     name: "APELLIDOS",
     uid: "apellidos",
     sortable: true,
@@ -28,25 +27,27 @@ const columns = [
   {
     name: "NUMERO COMPROBANTE",
     uid: "numeroComprobante",
-  }
-  , {
+  },
+  {
     name: "VALOR CANCELADO",
     uid: "valorCancelado",
   },
   {
-
     name: "FECHA DE PAGO",
     uid: "fechaPago",
+  },
+  {
+    name: "ESTADO", // Agregar la columna STATUS
+    uid: "status",
+    sortable: true,
   },
   {
     name: "ACCIONES",
     uid: "actions",
   }
-
 ];
 
 const valoresCancelados = [60, 45, 30];
-
 
 const pagos = Array(10).fill(null).map((_, index) => ({
   id: index + 1,
@@ -57,6 +58,7 @@ const pagos = Array(10).fill(null).map((_, index) => ({
   numeroComprobante: `Comprobante ${index + 1}`,
   valorCancelado: valoresCancelados[index % valoresCancelados.length],
   fechaPago: new Date(),
+  status: 'Pendiente', // Agregar estado inicial
 }));
 
 export { pagos, columns };

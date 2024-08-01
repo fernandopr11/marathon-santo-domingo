@@ -19,18 +19,20 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Chip,
+  ChipProps,
 } from '@nextui-org/react';
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 
 import { ChevronDownIcon } from '@/components/preinscripciones/ChevronDownIcon';
 import { SearchIcon } from '@/components/icons';
-import { columns, pagos } from '@/components/aprobrar_pagos/data';
+import { columns, pagos as initialPagos } from '@/components/aprobrar_pagos/data';
 import { capitalize } from '@/components/preinscripciones/utils';
 import DefaultLayout from '@/layouts/default';
 
 const INITIAL_VISIBLE_COLUMNS = columns.map(col => col.uid);
 
-type Pago = (typeof pagos)[0];
+type Pago = (typeof initialPagos)[0];
 
 // Agregar columna de vista previa del pago
 const extendedColumns = [
@@ -39,6 +41,7 @@ const extendedColumns = [
 ];
 
 export default function App() {
+  const [pagos, setPagos] = useState(initialPagos);
   const [filterValue, setFilterValue] = useState('');
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
   const [visibleColumns, setVisibleColumns] = useState<Selection>(
@@ -73,7 +76,7 @@ export default function App() {
     }
 
     return filteredPagos;
-  }, [filterValue]);
+  }, [filterValue, pagos]);
 
   const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
@@ -94,6 +97,24 @@ export default function App() {
     });
   }, [sortDescriptor, items]);
 
+  const handleAccept = (id: number) => {
+    setPagos(prevPagos =>
+      prevPagos.map(pago => pago.id === id ? { ...pago, status: 'Aceptado' } : pago)
+    );
+  };
+
+  const handleReject = (id: number) => {
+    setPagos(prevPagos =>
+      prevPagos.map(pago => pago.id === id ? { ...pago, status: 'Rechazado' } : pago)
+    );
+  };
+
+  const statusColorMap: Record<string, ChipProps['color']> = {
+    'Pendiente': 'warning',
+    'Aceptado': 'success',
+    'Rechazado': 'danger',
+  };
+
   const renderCell = useCallback((pago: Pago, columnKey: React.Key) => {
     let cellValue = pago[columnKey as keyof Pago];
 
@@ -103,13 +124,23 @@ export default function App() {
     }
 
     switch (columnKey) {
+      case 'status':
+        return (
+          <Chip
+            color={statusColorMap[pago.status]}
+            size="sm"
+            variant="flat"
+          >
+            {pago.status}
+          </Chip>
+        );
       case 'actions':
         return (
           <div className="relative flex justify-center items-center gap-2">
-            <Button isIconOnly size="sm" color="success" variant="light">
+            <Button isIconOnly size="sm" color="success" variant="light" onPress={() => handleAccept(pago.id)}>
               ✓
             </Button>
-            <Button isIconOnly size="sm" color="danger" variant="light">
+            <Button isIconOnly size="sm" color="danger" variant="light" onPress={() => handleReject(pago.id)}>
               ✕
             </Button>
           </div>
@@ -130,7 +161,7 @@ export default function App() {
       default:
         return cellValue as React.ReactNode;
     }
-  }, []);
+  }, [statusColorMap]);
 
   const onNextPage = useCallback(() => {
     if (page < pages) {
