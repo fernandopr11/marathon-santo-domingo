@@ -23,9 +23,13 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { VerticalDotsIcon } from '@/components/preinscripciones/VerticalDotsIcon';
 import { ChevronDownIcon } from '@/components/preinscripciones/ChevronDownIcon';
 import { SearchIcon } from '@/components/icons';
-import { columns2, users2 as initialUsers } from '@/components/preinscripciones/data';
+import {
+  columns2,
+  users2 as initialUsers,
+} from '@/components/preinscripciones/data';
 import { capitalize } from '@/components/preinscripciones/utils';
 import DefaultLayout from '@/layouts/default';
+import { updateUser } from '@/services/api';
 
 const INITIAL_VISIBLE_COLUMNS = [
   'nombres',
@@ -33,9 +37,11 @@ const INITIAL_VISIBLE_COLUMNS = [
   'cedula',
   'categoria',
   'talla',
-  'status', // Asegurarse de que 'status' esté aquí
+  'status',
+  'actions',
 ];
 
+//Create useState to set the initial users
 type User = (typeof initialUsers)[0];
 
 const CATEGORY_OPTIONS = ['42k', '21k', '10k'];
@@ -60,16 +66,34 @@ export default function App() {
   const hasSearchFilter = Boolean(filterValue);
   const hasCategoryFilter = selectedCategories.size > 0;
 
-  const handleAccept = (id) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user.id === id ? { ...user, status: 'Aceptado' } : user))
-    );
+  const handleAccept = async (id) => {
+    try {
+      // Actualización del estado local después de que la API haya respondido
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === id ? { ...user, status: 'Aprobada' } : user
+        )
+      );
+      // Llamada a la API para actualizar el estado del usuario
+      await updateUser(id, { application_status: 'Aprobada' });
+    } catch (error) {
+      console.error('Error updating user status:', error);
+    }
   };
 
-  const handleReject = (id) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user.id === id ? { ...user, status: 'Rechazado' } : user))
-    );
+  const handleReject = async (id) => {
+    try {
+      // Actualización del estado local después de que la API haya respondido
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === id ? { ...user, status: 'Rechazada' } : user
+        )
+      );
+
+      await updateUser(id, { application_status: 'Rechazada' });
+    } catch (error) {
+      console.error('Error updating user status:', error);
+    }
   };
 
   const headerColumns = useMemo(() => {
@@ -85,13 +109,13 @@ export default function App() {
 
     if (hasSearchFilter) {
       filteredUsers = filteredUsers.filter((user) =>
-        user.cedula.toString().includes(filterValue)
+        user.identification.toString().includes(filterValue)
       );
     }
 
     if (hasCategoryFilter) {
       filteredUsers = filteredUsers.filter((user) =>
-        selectedCategories.has(user.categoria)
+        selectedCategories.has(user.category)
       );
     }
 
@@ -127,18 +151,13 @@ export default function App() {
     const cellValue = user[columnKey as keyof User];
 
     switch (columnKey) {
-      case 'nombres':
-        return (
-          <User
-            avatarProps={{ radius: 'lg', src: user.avatar }}
-            name={cellValue}
-          />
-        );
-      case 'categoria':
+      case 'firstName':
+        return <User name={cellValue} />;
+      case 'category':
         return (
           <Chip
             className="capitalize"
-            color={categoryColorMap[user.categoria]}
+            color={categoryColorMap[user.category]}
             size="sm"
             variant="flat"
           >
@@ -150,11 +169,11 @@ export default function App() {
           <Chip
             className="capitalize"
             color={
-              user.status === 'Aceptado'
+              user.status === 'Aprobada'
                 ? 'success'
-                : user.status === 'Rechazado'
-                ? 'danger'
-                : 'warning'
+                : user.status === 'Rechazada'
+                  ? 'danger'
+                  : 'warning'
             }
             size="sm"
             variant="flat"
@@ -162,13 +181,13 @@ export default function App() {
             {cellValue}
           </Chip>
         );
-      case 'apellidos':
-      case 'cedula':
-      case 'fechaNacimiento':
-      case 'sexo':
-      case 'telefono':
+      case 'lastName':
+      case 'identification':
+      case 'birthDate':
+      case 'gender':
+      case 'phone':
       case 'email':
-      case 'talla':
+      case 'size':
         return cellValue;
       case 'actions':
         return (
@@ -232,8 +251,8 @@ export default function App() {
     setPage(1);
   }, []);
 
-  const onCategoryChange = useCallback((categories: Selection) => {
-    setSelectedCategories(categories);
+  const onCategoryChange = useCallback((category: Selection) => {
+    setSelectedCategories(category);
     setPage(1);
   }, []);
 

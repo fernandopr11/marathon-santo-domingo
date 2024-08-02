@@ -6,8 +6,9 @@ import * as Yup from 'yup';
 import dayjs from 'dayjs';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {createUser} from '../../services/api';
 
-const isValidCI = (ci) => {
+const isValidCI = (ci: string) => {
   var isNumeric = true;
   var total = 0,
     individual;
@@ -15,7 +16,7 @@ const isValidCI = (ci) => {
   for (var position = 0; position < 10; position++) {
     individual = ci.toString().substring(position, position + 1);
 
-    if (isNaN(individual)) {
+    if (isNaN(parseInt(individual))) {
       isNumeric = false;
       break;
     } else {
@@ -48,7 +49,7 @@ const isValidCI = (ci) => {
       return false;
     }
 
-    if (total !== parseInt(individual)) {
+    if (total !== parseInt(individual ?? '')) {
       return false;
     }
 
@@ -67,7 +68,7 @@ const validationSchema = Yup.object().shape({
     .min(2, 'Apellido muy corto')
     .max(50, 'Apellido muy largo')
     .required('Apellido requerido'),
-  idDocument: Yup.string()
+  identification: Yup.string()
     .required('Documento de identidad requerido')
     .test('isValidCI', 'Cédula ingresada no es válida', (value) =>
       isValidCI(value)
@@ -88,6 +89,7 @@ const validationSchema = Yup.object().shape({
 });
 
 const PreInscripcionForm: React.FC = () => {
+
   return (
     <DefaultLayout>
       <ToastContainer />
@@ -123,12 +125,18 @@ const PreInscripcionForm: React.FC = () => {
           validationSchema={validationSchema}
           validateOnChange={true}
           validateOnBlur={true}
-          onSubmit={(values, { resetForm }) => {
-            console.log(values);
-            toast.success(
-              'Su preinscripción a la carrera fue enviada satisfactoriamente'
-            );
-            resetForm();
+          onSubmit={async (values, { resetForm }) => {
+            try {
+              const response = await createUser(values); // Llamamos al servicio de Axios
+              console.log(response.data);
+              toast.success(
+                'Su preinscripción a la carrera fue enviada satisfactoriamente'
+              );
+              resetForm();
+            } catch (error) {
+              console.error(error);
+              toast.error('Hubo un error al enviar su preinscripción');
+            }
           }}
         >
           {({ errors, touched }) => (
@@ -161,11 +169,11 @@ const PreInscripcionForm: React.FC = () => {
                 <div>
                   <label className="block mb-1">Documento de identidad</label>
                   <Field
-                    name="idDocument"
+                    name="identification"
                     className="w-full px-4 py-2 border rounded"
                   />
                   <ErrorMessage
-                    name="idDocument"
+                    name="identification"
                     component="div"
                     className="text-red-600"
                   />
@@ -224,7 +232,7 @@ const PreInscripcionForm: React.FC = () => {
                     className="w-full px-4 py-2 border rounded"
                   >
                     <option value="">Selecciona una opción</option>
-                    <option value="ecuador">Ecuador</option>
+                    <option value="Ecuador">Ecuador</option>
                     {/* Añadir más opciones si es necesario */}
                   </Field>
                   <ErrorMessage
