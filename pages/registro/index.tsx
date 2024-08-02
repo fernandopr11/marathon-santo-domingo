@@ -1,12 +1,13 @@
 import DefaultLayout from '@/layouts/default';
 import Image from 'next/image';
-import React from 'react';
+import React, { useRef } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import dayjs from 'dayjs';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import {createUser} from '../../services/api';
+import { createUser } from '../../services/api';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 const isValidCI = (ci: string) => {
   var isNumeric = true;
@@ -89,6 +90,27 @@ const validationSchema = Yup.object().shape({
 });
 
 const PreInscripcionForm: React.FC = () => {
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
+
+  const handleSubmit = async (values, { resetForm }) => {
+    const recaptchaValue = recaptchaRef.current?.getValue();
+    if (recaptchaValue) {
+      try {
+        const response = await createUser(values);
+        console.log(response.data);
+        toast.success(
+          'Su preinscripción a la carrera fue enviada satisfactoriamente'
+        );
+        resetForm();
+        recaptchaRef.current?.reset();
+      } catch (error) {
+        console.error(error);
+        toast.error('Hubo un error al enviar su preinscripción');
+      }
+    } else {
+      toast.error('Por favor, completa el CAPTCHA');
+    }
+  };
 
   return (
     <DefaultLayout>
@@ -111,7 +133,7 @@ const PreInscripcionForm: React.FC = () => {
           initialValues={{
             firstName: '',
             lastName: '',
-            idDocument: '',
+            identification: '',
             birthDate: '',
             gender: '',
             phone: '',
@@ -125,19 +147,7 @@ const PreInscripcionForm: React.FC = () => {
           validationSchema={validationSchema}
           validateOnChange={true}
           validateOnBlur={true}
-          onSubmit={async (values, { resetForm }) => {
-            try {
-              const response = await createUser(values); // Llamamos al servicio de Axios
-              console.log(response.data);
-              toast.success(
-                'Su preinscripción a la carrera fue enviada satisfactoriamente'
-              );
-              resetForm();
-            } catch (error) {
-              console.error(error);
-              toast.error('Hubo un error al enviar su preinscripción');
-            }
-          }}
+          onSubmit={handleSubmit}
         >
           {({ errors, touched }) => (
             <Form>
@@ -203,7 +213,6 @@ const PreInscripcionForm: React.FC = () => {
                     <option value="">Selecciona una opción</option>
                     <option value="femenino">Femenino</option>
                     <option value="masculino">Masculino</option>
-                    {/* Añadir más opciones si es necesario */}
                   </Field>
                   <ErrorMessage
                     name="gender"
@@ -233,7 +242,6 @@ const PreInscripcionForm: React.FC = () => {
                   >
                     <option value="">Selecciona una opción</option>
                     <option value="Ecuador">Ecuador</option>
-                    {/* Añadir más opciones si es necesario */}
                   </Field>
                   <ErrorMessage
                     name="nationality"
@@ -367,6 +375,12 @@ const PreInscripcionForm: React.FC = () => {
               <div className="flex items-center mb-4">
                 <Field type="checkbox" name="newsletter" className="mr-2" />
                 <label>Deseo recibir información sobre nuevas carreras</label>
+              </div>
+              <div className="mb-4">
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey="6Lc7y_YpAAAAALTVwUlULqhO_pDI1w_jFE02vQ75"
+                />
               </div>
               <button
                 type="submit"
