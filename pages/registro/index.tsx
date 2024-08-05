@@ -7,7 +7,6 @@ import dayjs from 'dayjs';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { createUser } from '../../services/api';
-import ReCAPTCHA from 'react-google-recaptcha';
 
 const isValidCI = (ci: string) => {
   var isNumeric = true;
@@ -90,8 +89,6 @@ const validationSchema = Yup.object().shape({
 });
 
 const PreInscripcionForm: React.FC = () => {
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
-
   const handleSubmit = async (values: any, { resetForm }: any) => {
     try {
       const response = await createUser(values);
@@ -100,7 +97,6 @@ const PreInscripcionForm: React.FC = () => {
         'Su preinscripción a la carrera fue enviada satisfactoriamente'
       );
       resetForm();
-      recaptchaRef.current?.reset();
     } catch (error) {
       console.error(error);
       toast.error('Hubo un error al enviar su preinscripción');
@@ -109,7 +105,7 @@ const PreInscripcionForm: React.FC = () => {
 
   return (
     <DefaultLayout showNavbar={false}>
-      {/* <ToastContainer /> */}
+      <ToastContainer />
       <div className="max-w-6xl mx-auto p-6">
         <div className="relative w-full h-64 mb-6">
           <Image
@@ -371,12 +367,6 @@ const PreInscripcionForm: React.FC = () => {
                 <Field type="checkbox" name="newsletter" className="mr-2" />
                 <label>Deseo recibir información sobre nuevas carreras</label>
               </div>
-              {/* <div className="mb-4">
-                <ReCAPTCHA
-                  ref={recaptchaRef}
-                  sitekey="6Lc7y_YpAAAAALTVwUlULqhO_pDI1w_jFE02vQ75"
-                />
-              </div> */}
               <button
                 type="submit"
                 className="w-full bg-green-600 text-white px-4 py-2 rounded"
