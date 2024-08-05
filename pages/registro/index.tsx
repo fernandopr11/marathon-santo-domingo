@@ -113,7 +113,7 @@ const PreInscripcionForm: React.FC = () => {
   };
 
   return (
-    <DefaultLayout>
+    <DefaultLayout showNavbar={false}>
       <ToastContainer />
       <div className="max-w-6xl mx-auto p-6">
         <div className="relative w-full h-64 mb-6">

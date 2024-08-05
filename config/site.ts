@@ -7,20 +7,8 @@ export const siteConfig = {
     "https://www.santodomingo.gob.ec/wp-content/uploads/2020/05/favicon.png",
   navItems: [
     {
-      label: "Inicio",
-      href: "/",
-    },
-    {
-      label: "Registro",
-      href: "/registro",
-    },
-    {
       label: "Preinscripciones",
       href: "/preinscripciones",
-    },
-    {
-      label: "Pagar",
-      href: "/pagar",
     },
     {
       label: "Aprobar Pagos",

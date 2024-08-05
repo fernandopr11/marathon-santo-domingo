@@ -260,15 +260,6 @@ export default function App() {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex justify-between gap-3 items-end">
-          <Input
-            isClearable
-            className="w-full sm:max-w-[44%]"
-            placeholder="Buscar por cédula"
-            startContent={<SearchIcon />}
-            value={filterValue}
-            onClear={() => onClear()}
-            onValueChange={onSearchChange}
-          />
           <div className="flex gap-3">
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
@@ -290,30 +281,6 @@ export default function App() {
                 {columns2.map((column) => (
                   <DropdownItem key={column.uid} className="capitalize">
                     {capitalize(column.name)}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
-            <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  endContent={<ChevronDownIcon className="text-small" />}
-                  variant="flat"
-                >
-                  Categorías
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label="Table Categories"
-                closeOnSelect={false}
-                selectedKeys={selectedCategories}
-                selectionMode="multiple"
-                onSelectionChange={onCategoryChange}
-              >
-                {CATEGORY_OPTIONS.map((category) => (
-                  <DropdownItem key={category} className="capitalize">
-                    {capitalize(category)}
                   </DropdownItem>
                 ))}
               </DropdownMenu>

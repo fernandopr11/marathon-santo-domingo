@@ -1,20 +1,61 @@
-import CheckCircleIcon  from '@heroicons/react/20/solid/CheckCircleIcon';
+import CheckCircleIcon from '@heroicons/react/20/solid/CheckCircleIcon';
 import DefaultLayout from '@/layouts/default';
 import { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useTheme } from 'next-themes';
+import { useFormik } from 'formik';
+import { uploadPaymentProof } from '@/services/api';
+import { useRouter } from 'next/router';
 
 const DragAndDrop = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const { theme } = useTheme();
   const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
+  const userId = router.query.user_id as string; // Obtén el user_id de la URL
 
-  const onDrop = (acceptedFiles: File[]) => {
-    setSelectedFile(acceptedFiles[0]);
-  };
+  // Usa useFormik para manejar el formulario
+  const formik = useFormik({
+    initialValues: {
+      comprobante: null,
+    },
+    onSubmit: async () => {
+      if (!selectedFile || !userId) return;
 
+      try {
+        setUploading(true);
+        setUploadSuccess(false);
+        setUploadError(null);
+
+        // Llama al servicio con el archivo y el userId
+        const result = await uploadPaymentProof(userId, selectedFile);
+
+        console.log('Resultado de la carga:', result);
+
+        if (result) {
+          setUploadSuccess(true);
+          setSelectedFile(null); // Limpia el archivo seleccionado después de la carga exitosa
+        } else {
+          setUploadError('Error al subir el archivo.');
+        }
+      } catch (error) {
+        console.error('Error al subir el archivo:', error);
+        setUploadError('Error al subir el archivo.');
+      } finally {
+        setUploading(false);
+      }
+    },
+  });
+
+  // Configuración de Dropzone
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
+    onDrop: (acceptedFiles: File[]) => {
+      formik.setFieldValue('comprobante', acceptedFiles[0]);
+      setSelectedFile(acceptedFiles[0]);
+    },
     accept: {
       'image/png': ['.png'],
       'image/jpg': ['.jpg'],
@@ -28,12 +69,13 @@ const DragAndDrop = () => {
 
   const handleRemoveImage = () => {
     setSelectedFile(null);
+    formik.setFieldValue('comprobante', null);
   };
 
   if (!isMounted) return null;
 
   return (
-    <DefaultLayout>
+    <DefaultLayout showNavbar={false}>
       <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg flex">
         <div className="w-2/5 p-4">
           <h2 className="text-xl font-bold mb-4 text-black dark:text-white">
@@ -52,7 +94,7 @@ const DragAndDrop = () => {
               <CheckCircleIcon className="h-5 w-5 text-green-500" />
             </div>
             <p className="text-gray-700 dark:text-gray-300">
-             Se validará que el comprobante sea únicamente del Banco Pichincha
+              Se validará que el comprobante sea únicamente del Banco Pichincha.
             </p>
           </div>
           <div className="flex items-start mb-4">
@@ -74,7 +116,12 @@ const DragAndDrop = () => {
               className: `border-2 ${isDragActive ? 'border-green-500' : 'border-gray-300 dark:border-gray-500'} border-dashed rounded-lg p-6 mb-4 flex justify-center items-center cursor-pointer bg-gray-200 dark:bg-gray-700`,
             })}
           >
-            <input {...getInputProps()} />
+            <input
+              {...getInputProps()}
+              name="comprobante"
+              id="comprobante"
+              formEncType="multipart/form-data"
+            />
             <p className="text-lg text-gray-700 dark:text-gray-300 text-center">
               {isDragActive
                 ? 'Suelta aquí'
@@ -103,7 +150,9 @@ const DragAndDrop = () => {
                   />
                 </svg>
               </button>
-              <p className="text-lg text-gray-700 dark:text-gray-300 mb-2">Vista previa:</p>
+              <p className="text-lg text-gray-700 dark:text-gray-300 mb-2">
+                Vista previa:
+              </p>
               <div className="flex justify-center">
                 <div className="max-w-xs">
                   <img
@@ -119,15 +168,21 @@ const DragAndDrop = () => {
           <div className="flex justify-center">
             <button
               className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 mt-4 rounded focus:outline-none focus:shadow-outline"
-              onClick={() => {
-                // Aquí puedes agregar la lógica para enviar el archivo
-                alert('Enviar archivo');
-              }}
-              disabled={!selectedFile}
+              onClick={() => formik.handleSubmit()}
+              disabled={!selectedFile || uploading}
             >
-              Enviar
+              {uploading ? 'Subiendo...' : 'Enviar'}
             </button>
           </div>
+
+          {uploadSuccess && (
+            <div className="mt-4 text-green-500 text-center">
+              Comprobante subido exitosamente.
+            </div>
+          )}
+          {uploadError && (
+            <div className="mt-4 text-red-500 text-center">{uploadError}</div>
+          )}
         </div>
       </div>
     </DefaultLayout>

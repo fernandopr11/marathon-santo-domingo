@@ -1,3 +1,5 @@
+import { getPayments } from "@/services/api";
+
 const columns = [
   {
     name: "ID",
@@ -25,16 +27,8 @@ const columns = [
     sortable: true,
   },
   {
-    name: "NUMERO COMPROBANTE",
-    uid: "numeroComprobante",
-  },
-  {
-    name: "VALOR CANCELADO",
-    uid: "valorCancelado",
-  },
-  {
-    name: "FECHA DE PAGO",
-    uid: "fechaPago",
+    name: "CATEGORIA",
+    uid: "categoria",
   },
   {
     name: "ESTADO", // Agregar la columna STATUS
@@ -47,18 +41,11 @@ const columns = [
   }
 ];
 
-const valoresCancelados = [60, 45, 30];
+let pagos = [];
 
-const pagos = Array(10).fill(null).map((_, index) => ({
-  id: index + 1,
-  nombres: `Nombre ${index + 1}`,
-  apellidos: `Apellido ${index + 1}`,
-  email: `email${index + 1}@example.com`,
-  cedula: Math.floor(1000000000 + Math.random() * 9000000000),
-  numeroComprobante: `Comprobante ${index + 1}`,
-  valorCancelado: valoresCancelados[index % valoresCancelados.length],
-  fechaPago: new Date(),
-  status: 'Pendiente', // Agregar estado inicial
-}));
+getPayments().then((data) => {
+  pagos = data;
+  console.log(pagos);
+});
 
 export { pagos, columns };

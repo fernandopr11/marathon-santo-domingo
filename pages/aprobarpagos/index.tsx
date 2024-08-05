@@ -26,18 +26,22 @@ import React, { useState, useCallback, useMemo } from 'react';
 
 import { ChevronDownIcon } from '@/components/preinscripciones/ChevronDownIcon';
 import { SearchIcon } from '@/components/icons';
-import { columns, pagos as initialPagos } from '@/components/aprobrar_pagos/data';
+import {
+  columns,
+  pagos as initialPagos,
+} from '@/components/aprobrar_pagos/data';
 import { capitalize } from '@/components/preinscripciones/utils';
 import DefaultLayout from '@/layouts/default';
+import { updatePayment } from '@/services/api';
 
-const INITIAL_VISIBLE_COLUMNS = columns.map(col => col.uid);
+const INITIAL_VISIBLE_COLUMNS = columns.map((col) => col.uid);
 
 type Pago = (typeof initialPagos)[0];
 
 // Agregar columna de vista previa del pago
 const extendedColumns = [
   ...columns,
-  { uid: 'preview', name: 'VISTA PREVIA DEL PAGO' }
+  { uid: 'preview', name: 'VISTA PREVIA DEL PAGO' },
 ];
 
 export default function App() {
@@ -55,7 +59,6 @@ export default function App() {
   const [page, setPage] = useState(1);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
   const hasSearchFilter = Boolean(filterValue);
 
   const headerColumns = useMemo(() => {
@@ -97,71 +100,96 @@ export default function App() {
     });
   }, [sortDescriptor, items]);
 
-  const handleAccept = (id: number) => {
-    setPagos(prevPagos =>
-      prevPagos.map(pago => pago.id === id ? { ...pago, status: 'Aceptado' } : pago)
-    );
+  const handleAccept = async (id) => {
+    try {
+      setPagos((prevPagos) =>
+        prevPagos.map((pago) =>
+          pago.id === id ? { ...pago, status: 'Aprobado' } : pago
+        )
+      );
+      await updatePayment(id, { payment_status: 'Aprobado' });
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+    }
   };
 
-  const handleReject = (id: number) => {
-    setPagos(prevPagos =>
-      prevPagos.map(pago => pago.id === id ? { ...pago, status: 'Rechazado' } : pago)
-    );
+  const handleReject = async (id) => {
+    try {
+      setPagos((prevPagos) =>
+        prevPagos.map((pago) =>
+          pago.id === id ? { ...pago, status: 'Rechazado' } : pago
+        )
+      );
+      await updatePayment(id, { payment_status: 'Rechazado' });
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+    }
   };
 
   const statusColorMap: Record<string, ChipProps['color']> = {
-    'Pendiente': 'warning',
-    'Aceptado': 'success',
-    'Rechazado': 'danger',
+    Pendiente: 'warning',
+    Aprobado: 'success',
+    Rechazado: 'danger',
   };
 
-  const renderCell = useCallback((pago: Pago, columnKey: React.Key) => {
-    let cellValue = pago[columnKey as keyof Pago];
+  const renderCell = useCallback(
+    (pago: Pago, columnKey: React.Key) => {
+      let cellValue = pago[columnKey as keyof Pago];
 
-    // Convert Date to string
-    if (cellValue instanceof Date) {
-      cellValue = cellValue.toLocaleDateString();
-    }
+      // Convert Date to string
+      if (cellValue instanceof Date) {
+        cellValue = cellValue.toLocaleDateString();
+      }
 
-    switch (columnKey) {
-      case 'status':
-        return (
-          <Chip
-            color={statusColorMap[pago.status]}
-            size="sm"
-            variant="flat"
-          >
-            {pago.status}
-          </Chip>
-        );
-      case 'actions':
-        return (
-          <div className="relative flex justify-center items-center gap-2">
-            <Button isIconOnly size="sm" color="success" variant="light" onPress={() => handleAccept(pago.id)}>
-              ✓
-            </Button>
-            <Button isIconOnly size="sm" color="danger" variant="light" onPress={() => handleReject(pago.id)}>
-              ✕
-            </Button>
-          </div>
-        );
-      case 'preview':
-        return (
-          <a
-            href="#"
-            className="text-blue-500 underline"
-            onClick={() => {
-              setSelectedImage('/images/comprobante.jpg'); // Ruta relativa a la imagen en la carpeta public
-              setModalVisible(true);
-            }}
-          >
-            Ver Pago
-          </a>
-        );
-      default:
-        return cellValue as React.ReactNode;
-    }
-  }, [statusColorMap]);
+      switch (columnKey) {
+        case 'status':
+          return (
+            <Chip color={statusColorMap[pago.status]} size="sm" variant="flat">
+              {pago.status}
+            </Chip>
+          );
+        case 'actions':
+          return (
+            <div className="relative flex justify-center items-center gap-2">
+              <Button
+                isIconOnly
+                size="sm"
+                color="success"
+                variant="light"
+                onPress={() => handleAccept(pago.id)}
+              >
+                ✓
+              </Button>
+              <Button
+                isIconOnly
+                size="sm"
+                color="danger"
+                variant="light"
+                onPress={() => handleReject(pago.id)}
+              >
+                ✕
+              </Button>
+            </div>
+          );
+        case 'preview':
+          return (
+            <a
+              href="#"
+              className="text-blue-500 underline"
+              onClick={() => {
+                setSelectedImage('/images/comprobante.jpg'); // Ruta relativa a la imagen en la carpeta public
+                setModalVisible(true);
+              }}
+            >
+              Ver Pago
+            </a>
+          );
+        default:
+          return cellValue as React.ReactNode;
+      }
+    },
+    [statusColorMap]
+  );
 
   const onNextPage = useCallback(() => {
     if (page < pages) {
@@ -201,15 +229,6 @@ export default function App() {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex justify-between gap-3 items-end">
-          <Input
-            isClearable
-            className="w-full sm:max-w-[44%]"
-            placeholder="Buscar por cédula"
-            startContent={<SearchIcon />}
-            value={filterValue}
-            onClear={() => onClear()}
-            onValueChange={onSearchChange}
-          />
           <div className="flex gap-3">
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
@@ -325,7 +344,11 @@ export default function App() {
           {(column) => (
             <TableColumn
               key={column.uid}
-              align={column.uid === 'actions' || column.uid === 'preview' ? 'center' : 'start'}
+              align={
+                column.uid === 'actions' || column.uid === 'preview'
+                  ? 'center'
+                  : 'start'
+              }
               allowsSorting={column.sortable}
             >
               {column.name}
@@ -350,7 +373,11 @@ export default function App() {
               <h2>Vista previa del pago</h2>
             </ModalHeader>
             <ModalBody>
-              <img src={selectedImage} alt="Vista previa del pago" className="rounded-lg shadow-md" />
+              <img
+                src={selectedImage}
+                alt="Vista previa del pago"
+                className="rounded-lg shadow-md"
+              />
             </ModalBody>
             <ModalFooter>
               <Button onClick={() => setModalVisible(false)}>Cerrar</Button>
