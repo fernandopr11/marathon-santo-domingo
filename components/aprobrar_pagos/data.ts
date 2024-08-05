@@ -41,7 +41,7 @@ const columns = [
   }
 ];
 
-let pagos = [];
+let pagos: any[] = [];
 
 getPayments().then((data) => {
   pagos = data;

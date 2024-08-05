@@ -100,7 +100,7 @@ export default function App() {
     });
   }, [sortDescriptor, items]);
 
-  const handleAccept = async (id) => {
+  const handleAccept = async (id: any) => {
     try {
       setPagos((prevPagos) =>
         prevPagos.map((pago) =>
@@ -113,7 +113,7 @@ export default function App() {
     }
   };
 
-  const handleReject = async (id) => {
+  const handleReject = async (id: any) => {
     try {
       setPagos((prevPagos) =>
         prevPagos.map((pago) =>

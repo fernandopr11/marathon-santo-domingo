@@ -64,9 +64,9 @@ export default function App() {
   const [page, setPage] = useState(1);
 
   const hasSearchFilter = Boolean(filterValue);
-  const hasCategoryFilter = selectedCategories.size > 0;
+  // const hasCategoryFilter = selectedCategories.size > 0;
 
-  const handleAccept = async (id) => {
+  const handleAccept = async (id: any) => {
     try {
       // Actualización del estado local después de que la API haya respondido
       setUsers((prevUsers) =>
@@ -81,7 +81,7 @@ export default function App() {
     }
   };
 
-  const handleReject = async (id) => {
+  const handleReject = async (id: any) => {
     try {
       // Actualización del estado local después de que la API haya respondido
       setUsers((prevUsers) =>
@@ -113,11 +113,11 @@ export default function App() {
       );
     }
 
-    if (hasCategoryFilter) {
-      filteredUsers = filteredUsers.filter((user) =>
-        selectedCategories.has(user.category)
-      );
-    }
+    // if (hasCategoryFilter) {
+    //   filteredUsers = filteredUsers.filter((user) =>
+    //     selectedCategories.has(user.category)
+    //   );
+    // }
 
     return filteredUsers;
   }, [filterValue, selectedCategories, users]);

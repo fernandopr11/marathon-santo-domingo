@@ -61,7 +61,7 @@ const columns2 = [
 ];
 
 
-let users2 = [];
+let users2:any[] = [];
 
 getUsers().then((data) => {
   users2 = data;

@@ -92,7 +92,7 @@ const validationSchema = Yup.object().shape({
 const PreInscripcionForm: React.FC = () => {
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
-  const handleSubmit = async (values, { resetForm }) => {
+  const handleSubmit = async (values: any, { resetForm }: any) => {
     const recaptchaValue = recaptchaRef.current?.getValue();
     if (recaptchaValue) {
       try {
